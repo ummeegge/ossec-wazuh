@@ -83,7 +83,7 @@ install_funct() {
     ./install.sh 2>&1 | tee /tmp/${BIN}_installer.log;
     symlinkdel_funct;
     symlinkadd_funct;
-    mv /etc/rc.d/init.d/${BIN}* /etc/rc.d/init.d/${BIN};
+    mv /etc/rc.d/init.d/wazuh* /etc/rc.d/init.d/wazuh;
     touch /opt/pakfire/db/installed/meta-${BIN};
     # CleanUP
     rm -rf \
