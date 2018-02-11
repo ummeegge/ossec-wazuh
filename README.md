@@ -1,6 +1,4 @@
 # Ossec + Wazuh installer for IPFire environment
-################################################
-OSSEC and Wazuh development for IPFire systems
 
 Scripts should deliver a possibility to integrate 
 Ossec --> http://ossec.github.io/ OR
@@ -27,16 +25,6 @@ Repo contains currently:
 	- Serves initscript and adds also symlinks for the runlevels and meta files for de- or activation of Wazuh over IPFire webuserinterface.
 	- Includes a minimal configuration section to add agents <--> server (vice a vers).
 	- Installer and uninstaller logs can be found under /tmp.
-
-- An installer 'ossec_wi_installer.sh' for Ossec WI --> http://www.ossec.net/wiki/index.php/OSSECWUI:Install with (DEPRECATED and will be dropped with IPFire Core 118 version):
-
-	- SHA256 sum check for integrity of the downloaded Ossec sources.
-	- php.ini modifcations currently only for europe.
-	- A vhost entry for port 9955 TCP over HTTPS where a user dialog takes place, which provides you the possibility to set only allowed hosts or networks (preferable in the LAN area) to access the WI.
-	- A userdialog will askes for user and password to access Ossec WI.
-	- A user dialog will asks for webserver permissions which should be regularily nobody.
-	- Access.log and error.log will be under /var/log/httpd .
-	- Logrotate will be integrated for both (acces and error) logs.
 
 - A send an e-mail alert script 'ossec_email_alert.sh' which can also be used for Wazuh and does the following:
 
