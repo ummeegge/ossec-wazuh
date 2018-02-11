@@ -1,0 +1,338 @@
+#!/bin/bash -
+
+#
+# Ossec agent configuration script.
+#
+# $author: ummeegge at ipfire.org ; $date: 16.04.2017
+#######################################################
+#
+
+
+## Log paths
+LOG="/var/log";
+
+ASTERISK="${LOG}/asterisk/messages";
+CUPS="${LOG}/cups/error_log";
+NGINX="${LOG}/nginx/error.log";
+SNORT="${LOG}/snort/alert";
+VSFPTD="${LOG}/vsftpd.log";
+SAMBA="${LOG}/samba/samba-log.smbd";
+## OSSEC files
+O="/var/ossec";
+CONF="${O}/etc/ossec.conf";
+LOG="${O}/logs/ossec.log";
+OSSECCONF="${O}/etc/ossec.conf";
+BIN="${O}/bin";
+MANAGEA="${BIN}/manage_agents";
+AGENTAUTH="${BIN}/agent-auth"
+UTIL="${BIN}/util.sh";
+
+# Text and formatting functions
+# Formatting and Colors
+COLUMNS="$(tput cols)";
+R=$(tput setaf 1);
+G=$(tput setaf 2);
+B=$(tput setaf 6);
+b=$(tput bold);
+N=$(tput sgr0);
+seperator(){ printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -; }
+INSTALL="-- Welcome to OSSEC configuration helper for agent installation --";
+SIP="- OSSEC server IP configuration -";
+KEYMANAGER="- OSSEC server key integration for OSSEC agents -";
+KEYMA="There are two possibilities to integrate OSSECs server key into the agent.";
+LOGCHECK="- OSSEC log check -";
+LOGADD="- OSSEC automatic log add helper -";
+
+## Functions
+# Check ossec configuration and reconfigure it if wanted
+conf_funct(){
+	echo;
+	printf "%*s\n" $(((${#SIP}+$COLUMNS)/2)) "${SIP}";
+	seperator;
+	echo;
+	if grep -q 'server-ip' ${CONF}; then
+		SERVERIP=$(grep 'server-ip' ${CONF} | grep -o -P '(?<=>).*(?=<)');
+		echo -e "Your current OSSEC remote server IP is - '${G}${B}${SERVERIP}${N}'";
+		echo;
+		printf "%b" "To change the IP use ${R}'Y'${N} [ENTER] - To leave it as it is use ${R}'N'${N} [ENTER]: ";
+		read what;
+		echo;
+		case "$what" in
+			y*|Y*)
+				while true
+				do
+					echo "Please enter OSSECs remote server IP: "; read ip
+					echo;
+					if [[ ${ip} =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+						sed -i "s/${SERVERIP}/${ip}/" ${CONF};
+						echo -e "${G}Have changed server IP to ${ip} ";
+						echo;
+						/etc/init.d/ossec restart;
+						echo;
+						read -p "To return to configuration menu press [ENTER]"; 
+						return;
+					else
+						echo -e "${R}This is not a valid IP, please try it again in a form like e.g. 192.168.18.4${N}";
+						echo;
+					fi
+				done
+				;;
+
+			n*|N*)
+				echo;
+				echo -e "${B}OK will change nothing - OSSECs remote server IP is still '${G}${B}${SERVERIP}${N}' - go back to menu now... ${N}";
+				echo;
+				sleep 5;
+			;;
+		esac
+
+	elif grep -q 'server-hostname' ${CONF}; then
+		SERVERHOSTNAME=$(grep 'server-hostname' ${CONF} | grep -o -P '(?<=>).*(?=<)');
+		echo -e "Your current OSSEC remote server hostname is - '${G}${B}${SERVERHOSTNAME}${N}'";
+		echo;
+		printf "%b" "To change the hostname use ${R}'Y'${N} [ENTER] - To leave it as it is use ${R}'N'${N} [ENTER]: ";
+		read what;
+		echo;
+		case "$what" in
+			y*|Y*)
+				while true
+				do
+					echo "Please enter OSSECs remote server hostname: "; read name
+					if [[ ${name} =~ ^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*$ ]]; then
+						sed -i "s/${SERVERHOSTNAME}/${name}/" ${CONF};
+						echo -e "${G}Have changed server hostname to ${name} ";
+						echo;
+						/etc/init.d/ossec restart;
+						echo;
+						read -p "To return to configuration menu press [ENTER]";
+						return;
+					else
+						echo -e "${R}This is not a valid hostname, please try it again in a form like e.g. my.host.tld${N}";
+						echo;
+					fi						
+				done
+			;;
+
+			n*|N*)
+				echo;
+				echo -e "${B}OK will change nothing - OSSECs remote server hostname is still '${G}${B}${SERVERHOSTNAME}${N}' - go back to menu now... ${N}";
+				echo;
+				sleep 5;
+			;;
+		esac
+	else
+		echo;
+		echo -e "${R}Sorry could not find a valid OSSEC agent installation. Need to quit... ${N}"
+		echo;
+	fi
+}
+
+manageagents_funct(){
+	## Add server key with Ossecs manage_agents.sh or ossec-authd
+	echo;
+	printf "%*s\n" $(((${#KEYMANAGER}+$COLUMNS)/2)) "${KEYMANAGER}";
+	seperator;
+	echo;
+	if [ -e /var/ossec/etc/client.keys ]; then
+		echo;
+		echo -e "${R}There is already a key integrated, please delete it first... ${N}";
+		echo;
+		sleep 3;
+	else
+		printf "%*s\n" $(((${#KEYMA}+$COLUMNS)/2)) "${KEYMA}";
+		echo;
+		echo "1) Extract the key on the server, copy it there and paste it here to the agent under menu '1)' .";
+		echo "2) Setup a keymanager on server side and connect your agent to the server, the key will then automatically be integrated.";
+		echo;
+		echo -e "${B}To activate the keymanager on server side, use there the following commands:"
+		echo;
+		echo -e "openssl genrsa -out /var/ossec/etc/sslmanager.key 2048";
+		echo -e "openssl req -new -x509 -key /var/ossec/etc/sslmanager.key -out /var/ossec/etc/sslmanager.cert -days 365";
+		echo -e "/var/ossec/bin/ossec-authd -p 1515 >/dev/null 2>&1 & ${N}";
+		echo;
+		printf "%b" "To use 1) use '${R}1${N}' [ENTER] - To use '2)' use '${R}2${N}' [ENTER] - To leave this section use '${R}N${N}' [ENTER]: ";
+		read what;
+		echo;
+		case "$what" in
+			1*|!*)
+				${MANAGEA};
+				sleep 3;
+			;;
+
+			2*|!*)
+				while true; do
+					if grep -q 'server-ip' ${CONF}; then
+						printf "Please enter OSSECs remote server IP: ";
+						read ip
+						echo;
+						if [[ ${ip} =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+							${AGENTAUTH} -m ${ip} -p 1515
+							sleep 3;
+							/etc/init.d/ossec restart;
+							echo;
+							read -p "To return to configuration menu press [ENTER]";
+							return;
+						else
+							printf "${R}This is not a valid IP, please try it again in a form like e.g. 192.168.18.4${N}";
+							echo;
+							sleep 3;
+						fi
+					elif grep -q 'server-hostname' ${CONF}; then
+						printf "Please enter OSSECs remote server IP: ";
+						read name
+						echo;
+						if [[ ${name} =~ ^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*$ ]]; then
+							${AGENTAUTH} -m ${name} -p 1515
+							echo;
+							/etc/init.d/ossec restart;
+							echo;
+							read -p "To return to configuration menu press [ENTER]";
+							return;
+						fi
+					else
+						echo -e "${R}This is not a valid hostname, please try it again in a form like e.g. my.host.tld${N}";
+						echo;
+					fi
+				done
+			;;
+
+			n*|N*)
+				echo -e "${B}OK will change nothing and go back to menu... ${N}";
+				echo;
+				sleep 3;
+			;;
+		esac
+	fi
+}
+
+addlogs_funct(){
+	## Add new logs if presant
+	echo;
+	printf "%*s\n" $(((${#LOGADD}+$COLUMNS)/2)) "${LOGADD}";
+	seperator;
+	echo;
+	echo "Current investigated logs are:";
+	echo;
+	grep 'location' ${CONF} | grep -o -P '(?<=>).*(?=<)';
+	echo;
+	printf "%b" "To check for potential new logs use ${R}'Y'${N} [ENTER] - To quit this here use ${R}'N'${N} [ENTER]: ";
+	read what;
+	echo;
+	case "$what" in
+		y*|Y*)
+			#/var/log/asterisk/messages
+			if [[ -e "${ASTERISK}" ]]; then ${UTIL} addfile ${ASTERISK}; fi
+			#/var/log/cups/error_log
+			if [[ -e "${CUPS}" ]]; then ${UTIL} addfile ${CUPS}; fi
+			#/var/log/nginx/access.log
+			#/var/log/nginx/error.log
+			if [[ -e "${NGINX}" ]]; then ${UTIL} addfile /var/log/nginx/*.log; fi
+			#/var/log/samba/samba-log.winbindd
+			#/var/log/samba/samba-log.smbd
+			#/var/log/samba/log.nmbd
+			if [[ -e "${SAMBA}" ]]; then ${UTIL} addfile /var/log/samba/samba-log.*; ${UTIL} addfile /var/log/samba/log.nmbd; fi
+			#/var/log/snort/alert
+			if [[ -e "${SNORT}" ]]; then ${UTIL} addfile ${SNORT} snort-fast; fi
+			#/var/log/vsftpd.log
+			if [[ -e "${VSFPTD}" ]]; then ${UTIL} addfile ${VSFPTD}; fi
+			echo;
+			read -p "To go back to the menu press [ENTER]";
+		;;
+
+		n*|N*)
+			echo -e "${B}OK will change nothing and go back to menu... ${N}";
+			echo;
+			sleep 3;
+		;;
+	esac
+}
+
+logcheck_funct(){
+	echo;
+	printf "%*s\n" $(((${#LOGCHECK}+$COLUMNS)/2)) "${LOGCHECK}";
+	seperator;
+	echo;
+	echo -e "You can also check your OSSEC logs under '${B}/var/ossec/logs${N}' by yourself... "
+	echo;
+	printf "%b" "To check ossec.log now use ${R}'Y'${N} [ENTER] - To quit this here use ${R}'N'${N} [ENTER]: ";
+	read what;
+	echo;
+	case "$what" in
+		y*|Y*)
+			cat ${LOG};
+			read -p "To to go back to the menu press [ENTER]";
+		;;
+
+		n*|N*)
+			echo -e "${B}OK will change nothing and go back to menu... ${N}";
+			echo;
+			sleep 3;
+		;;
+	esac
+
+}
+
+# Check for installation
+if [ -e /var/ossec/bin/agent-auth ]; then
+	# Configure Menu
+	while true; do
+		# Choose configuration point
+		clear;
+		echo -e "${N}";
+		seperator;
+		printf "%*s\n" $(((${#INSTALL}+$COLUMNS)/2)) "${INSTALL}";
+		seperator;
+		echo;
+		echo;
+		echo -e "    To configure OSSECs server IP press                '${B}${b}i${N}' and [ENTER]";
+		echo -e "    To import OSSECs server key press                  '${B}${b}k${N}' and [ENTER]";
+		echo -e "    To search/integrate potential new logs press       '${B}${b}s${N}' and [ENTER]";
+		echo -e "    To check the ossec log press                       '${B}${b}l${N}' and [ENTER]";
+		echo;
+		echo;
+		seperator;
+		echo -e "    If you want to quit this installation press        '${B}${b}q${N}' and [ENTER]";
+		seperator;
+		echo -e "${N}";
+		read -r choice
+		clear;
+		## Install section
+		case $choice in
+			# Configure server IP
+			i*|I*)
+				conf_funct;
+			;;
+
+			k*|K*)
+				manageagents_funct;
+			;;
+
+			s*|S*)
+				addlogs_funct;
+			;;
+
+			l*|L*)
+				logcheck_funct;
+			;;
+
+			q*|Q*)
+				exit 0;
+			;;
+
+			*)
+				echo;
+				echo -e "${R}This options does not exist... ${N}";
+				echo;
+				sleep 3;
+			;;
+
+		esac
+	done
+else
+	echo;
+	echo -e "${B}${R}Sorry could not find an OSSEC agent installation. Please install it first. Need to quit... ";
+	echo;
+	exit 1;
+fi
+
+# End script

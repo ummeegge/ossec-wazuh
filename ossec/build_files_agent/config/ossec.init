@@ -1,0 +1,46 @@
+#!/bin/bash -
+
+#
+# Ossec init script
+# $Author: ummeegge at ipfire.org
+# $date: 12.04.2017
+######################################
+#
+
+DIR="/var/ossec";
+BIN="${DIR}/bin/ossec-control";
+DESC="Ossec agent";
+
+. /etc/sysconfig/rc
+. ${rc_functions}
+
+case "${1}" in
+	start)
+		boot_mesg "Starting ${DESC}..."
+		${BIN} start
+		evaluate_retval
+		;;
+
+	stop)
+		boot_mesg "Stopping ${DESC}..."
+		${BIN} stop
+		evaluate_retval
+		;;
+
+	restart)
+		${BIN} stop
+		sleep 1
+		${BIN} start
+		;;
+
+	status)
+		${BIN} status
+		;;
+
+	*)
+		echo "Usage: ${0} {start|stop|restart|status}"
+		exit 1
+		;;
+esac
+
+# End $rc_base/init.d/ossec
