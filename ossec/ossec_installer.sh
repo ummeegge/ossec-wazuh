@@ -364,6 +364,7 @@ do
             if [[ ! -e /var/ossec ]]; then
                 echo "OSSEC is currently not installed on this system... ";
                 echo;
+                sleep 3;
                 exit 1;
             else
                 echo;

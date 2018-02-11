@@ -339,6 +339,7 @@ do
             if [ ! -e "${wazuh}" ]; then
                 echo "Wazuh is currently not installed on this system... ";
                 echo;
+                sleep 3;
                 exit 1;
             else
                 echo;
