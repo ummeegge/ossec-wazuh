@@ -35,7 +35,7 @@ seperator(){
 	echo -e "${O}$(printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -;)${N}"
 }
 WELCOME="${B}- Welcome to OSSEC + Wazuh administration -";
-WELCOMEA="In- and uninstallation for OSSEC + Wazuh, OSSECs WI (deprecated) and and email alert setup assistent${N}";
+WELCOMEA="In- and uninstallation for OSSEC + Wazuh and email alert setup assistent${N}";
 OSSEC="To install or uninstall OSSEC press                 ${B}${b}'o'${N} and [ENTER]";
 WAZUH="To install or uninstall Wazuh press                 ${B}${b}'w'${N} and [ENTER]"
 ESETUP="To manage OSSEC + Wazuh email alert press           ${B}${b}'e'${N} and [ENTER]";
