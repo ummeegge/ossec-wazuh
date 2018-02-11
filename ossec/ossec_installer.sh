@@ -235,6 +235,7 @@ do
                     echo -e "\033[1;31mShit happens the SHA2 sum is incorrect, please report this here\033[0m";
                     echo "--> https://forum.ipfire.org/viewtopic.php?f=4&t=4924";
                     echo;
+                    sleep 5;
                     exit 1;
                 fi
                 # Unpack and install package
@@ -285,6 +286,7 @@ do
                     echo -e "\033[1;31mShit happens the SHA2 sum is incorrect, please report this here\033[0m";
                     echo "--> https://forum.ipfire.org/viewtopic.php?f=4&t=4924";
                     echo;
+                    sleep 5;
                     exit 1;
                 fi
                 # Unpack and install package

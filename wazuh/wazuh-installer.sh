@@ -15,7 +15,7 @@
 # Packages
 VER="3.2.0";
 wazuh="/var/ossec";
-AGENTA=" wazuh-agent-${VER}-32bit-binary.tgz";
+AGENTA="wazuh-agent-${VER}-32bit-binary.tgz";
 SERVERA="wazuh-hybrid-${VER}-32bit-binary.tgz";
 AGENTB="wazuh-agent-${VER}-64bit-binary.tgz";
 SERVERB="wazuh-hybrid-${VER}-64bit-binary.tgz";
@@ -26,7 +26,7 @@ CUSTOMALERTLOG="${wazuh}/logs/alerts/custom_dated_alert.log";
 RC="/etc/sysconfig/rc.local";
 
 # Download URL
-URL="https://people.ipfire.org/~ummeegge/wazuh/";
+URL="https://people.ipfire.org/~ummeegge/wazuh";
 
 # SHA256 sums
 SERVERSUMA="3d3e2d7733f6db1d187adaef3be0f78af7ba12a76c1456af1a9dcc6f856b98b9";
@@ -230,6 +230,7 @@ do
                     echo -e "\033[1;31mShit happens the SHA2 sum is incorrect, please report this here\033[0m";
                     echo "--> https://forum.ipfire.org/viewtopic.php?f=4&t=4924";
                     echo;
+                    sleep 5
                     exit 1;
                 fi
                 # Unpack and install package
@@ -269,6 +270,7 @@ do
                     echo -e "\033[1;31mShit happens the SHA2 sum is incorrect, please report this here\033[0m";
                     echo "--> https://forum.ipfire.org/viewtopic.php?f=4&t=4924";
                     echo;
+                    sleep 5;
                     exit 1;
                 fi
                 # Unpack and install package
