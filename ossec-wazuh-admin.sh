@@ -1,41 +1,50 @@
 #!/bin/bash -
 
 #
-# OSSEC installerscript on IPFire platform for:
+# OSSEC + Wazuh installerscript for IPFire platform which includes:
 # - OSSEC server and agent installation fo 32 and 64 bit versions.
-# - OSSEC webinterface.
-# - OSSEC e-mail alert setup assistent which provides GPG encryption and TLS transport layer and SMTP auth.
+# - Wazuh server and agent installation for 32 and 64 bit versions.
+# - OSSEC webinterface (DEPRECATED with Core 118) .
+# - OSSEC/Wazuh e-mail alert setup assistent which provides GPG encryption and TLS transport layer and SMTP auth.
 #
-# $author: ummeegge at web de ; $date: 07.06.2017
-###########################################################################################################
+# $author: ummeegge at web de ; $date: 11.02.2018
+#################################################################################################################
 #
 
-# Download addresses for installer scripts
-OINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-ipfire/master/ossec_installer.sh";
+## Download addresses for installer scripts
+# OSSEC in- uninstaller
 OINSTALLER="ossec_installer.sh";
-WINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-ipfire/master/ossec_wi_installer.sh";
-WINSTALLER="ossec_wi_installer.sh";
-EINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-ipfire/master/ossec_email_setup.sh";
-EINSTALLER="ossec_email_setup.sh";
+OINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-wazuh/master/ossec/${OINSTALLER}";
 
-# Formatting and Colors
+# Wazuh in- uninstaller
+WAINSTALLER="wazuh-installer.sh";
+WAINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-wazuh/master/wazuh/${WAINSTALLER}";
+
+# OSSEC WI in- uninstaller
+WINSTALLER="ossec_wi_installer.sh";
+WINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-wazuh/master/ossec/${WINSTALLER}";
+
+# Email alert setup script
+EINSTALLER="ossec_email_setup.sh";
+EINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-wazuh/master/ossec/${EINSTALLER}";
+
+## Formatting and Colors
 COLUMNS="$(tput cols)";
 R=$(tput setaf 1);
-G=$(tput setaf 2);
 O=$(tput setaf 3);
-C=$(tput setaf 4);
 B=$(tput setaf 6);
 b=$(tput bold);
 N=$(tput sgr0);
 seperator(){
 	echo -e "${O}$(printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -;)${N}"
 }
-WELCOME="- Welcome to OSSEC administration -";
-WELCOMEA="In- and uninstallation for OSSEC, OSSECs WI and and email alert setup assistent";
+WELCOME="${B}- Welcome to OSSEC + Wazuh administration -";
+WELCOMEA="In- and uninstallation for OSSEC + Wazuh, OSSECs WI (deprecated) and and email alert setup assistent${N}";
 OSSEC="To install or uninstall OSSEC press                 ${B}${b}'o'${N} and [ENTER]";
-WINTERFACE="To install or uninstall OSSECs webinterface press   ${B}${b}'w'${N} and [ENTER]";
-ESETUP="To activate or deactivate OSSECs email alert press  ${B}${b}'e'${N} and [ENTER]";
-QUIT="If you want to quit this installation press         ${B}${b}'q'${N} and [ENTER]";
+WAZUH="To install or uninstall Wazuh press                 ${B}${b}'w'${N} and [ENTER]"
+WINTERFACE="To install or uninstall OSSECs webinterface press   ${B}${b}'i'${N} and [ENTER]";
+ESETUP="To manage OSSEC + Wazuh email alert press           ${B}${b}'e'${N} and [ENTER]";
+QUIT="If you want to quit this installation press          ${B}${b}'q'${N} and [ENTER]";
 
 
 # Installer Menu
@@ -45,16 +54,17 @@ do
 	clear;
 	echo ${N}
 	seperator;
-	printf "%*s\n" $(((${#WELCOME}+$COLUMNS)/2)) "${WELCOME}";
-	printf "%*s\n" $(((${#WELCOMEA}+$COLUMNS)/2)) "${WELCOMEA}";
+	printf "%*s\n" $(((${#WELCOME}+COLUMNS)/2)) "${WELCOME}";
+	printf "%*s\n" $(((${#WELCOMEA}+COLUMNS)/2)) "${WELCOMEA}";
 	seperator;
 	echo;
-	printf "%*s\n" $(((${#OSSEC}+$COLUMNS)/2)) "${OSSEC}";
-	printf "%*s\n" $(((${#WINTERFACE}+$COLUMNS)/2)) "${WINTERFACE}";
-	printf "%*s\n" $(((${#ESETUP}+$COLUMNS)/2)) "${ESETUP}";
+	printf "%*s\n" $(((${#OSSEC}+COLUMNS)/2)) "${OSSEC}";
+	printf "%*s\n" $(((${#WAZUH}+COLUMNS)/2)) "${WAZUH}";
+	printf "%*s\n" $(((${#WINTERFACE}+COLUMNS)/2)) "${WINTERFACE}";
+	printf "%*s\n" $(((${#ESETUP}+COLUMNS)/2)) "${ESETUP}";
 	echo;
 	seperator;
-	printf "%*s\n" $(((${#QUIT}+$COLUMNS)/2)) "${QUIT}";
+	printf "%*s\n" $(((${#QUIT}+COLUMNS)/2)) "${QUIT}";
 	seperator;
 	echo;
 	read choice
@@ -65,7 +75,7 @@ do
 			clear;
 			cd /tmp || exit 1;
 			# Check if package is already presant otherwise download it
-			if [[ ! -e "${OINSTALLER}" ]]; then
+			if [ ! -e "${OINSTALLER}" ]; then
 				echo;
 				curl -O ${OINSTALLERADDRESS};
 			fi
@@ -77,7 +87,19 @@ do
 			clear;
 			cd /tmp || exit 1;
 			# Check if package is already presant otherwise download it
-			if [[ ! -e "${WINSTALLER}" ]]; then
+			if [ ! -e "${WAINSTALLER}" ]; then
+				echo;
+				curl -O ${WAINSTALLERADDRESS};
+			fi
+			chmod +x ${WAINSTALLER};
+			./${WAINSTALLER};
+		;;
+
+		i*|I*)
+			clear;
+			cd /tmp || exit 1;
+			# Check if package is already presant otherwise download it
+			if [ ! -e "${WINSTALLER}" ]; then
 				echo;
 				curl -O ${WINSTALLERADDRESS};
 			fi
@@ -89,7 +111,7 @@ do
 			clear;
 			cd /tmp || exit 1;
 			# Check if package is already presant otherwise download it
-			if [[ ! -e "${EINSTALLER}" ]]; then
+			if [ ! -e "${EINSTALLER}" ]; then
 				echo;
 				curl -O ${EINSTALLERADDRESS};
 			fi
