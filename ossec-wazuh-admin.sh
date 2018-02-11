@@ -42,7 +42,7 @@ WELCOME="${B}- Welcome to OSSEC + Wazuh administration -";
 WELCOMEA="In- and uninstallation for OSSEC + Wazuh, OSSECs WI (deprecated) and and email alert setup assistent${N}";
 OSSEC="To install or uninstall OSSEC press                 ${B}${b}'o'${N} and [ENTER]";
 WAZUH="To install or uninstall Wazuh press                 ${B}${b}'w'${N} and [ENTER]"
-WINTERFACE="To install or uninstall OSSECs webinterface press   ${B}${b}'i'${N} and [ENTER]";
+WINTERFACE="                         To install or uninstall OSSECs webinterface press   ${B}${b}'i'${N} and [ENTER] ${R}(DEPRECATED)${N}";
 ESETUP="To manage OSSEC + Wazuh email alert press           ${B}${b}'e'${N} and [ENTER]";
 QUIT="If you want to quit this installation press          ${B}${b}'q'${N} and [ENTER]";
 
