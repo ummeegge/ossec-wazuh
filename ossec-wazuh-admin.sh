@@ -20,10 +20,6 @@ OINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-wazuh/master
 WAINSTALLER="wazuh-installer.sh";
 WAINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-wazuh/master/wazuh/${WAINSTALLER}";
 
-# OSSEC WI in- uninstaller
-WINSTALLER="ossec_wi_installer.sh";
-WINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-wazuh/master/ossec/${WINSTALLER}";
-
 # Email alert setup script
 EINSTALLER="ossec_email_setup.sh";
 EINSTALLERADDRESS="https://raw.githubusercontent.com/ummeegge/ossec-wazuh/master/ossec/${EINSTALLER}";
@@ -42,7 +38,6 @@ WELCOME="${B}- Welcome to OSSEC + Wazuh administration -";
 WELCOMEA="In- and uninstallation for OSSEC + Wazuh, OSSECs WI (deprecated) and and email alert setup assistent${N}";
 OSSEC="To install or uninstall OSSEC press                 ${B}${b}'o'${N} and [ENTER]";
 WAZUH="To install or uninstall Wazuh press                 ${B}${b}'w'${N} and [ENTER]"
-WINTERFACE="              To install or uninstall OSSECs webinterface press   ${B}${b}'i'${N} and [ENTER] ${R}(DEPRECATED)${N}";
 ESETUP="To manage OSSEC + Wazuh email alert press           ${B}${b}'e'${N} and [ENTER]";
 QUIT="If you want to quit this installation press          ${B}${b}'q'${N} and [ENTER]";
 
@@ -60,7 +55,6 @@ do
 	echo;
 	printf "%*s\n" $(((${#OSSEC}+COLUMNS)/2)) "${OSSEC}";
 	printf "%*s\n" $(((${#WAZUH}+COLUMNS)/2)) "${WAZUH}";
-	printf "%*s\n" $(((${#WINTERFACE}+COLUMNS)/2)) "${WINTERFACE}";
 	printf "%*s\n" $(((${#ESETUP}+COLUMNS)/2)) "${ESETUP}";
 	echo;
 	seperator;
@@ -93,18 +87,6 @@ do
 			fi
 			chmod +x ${WAINSTALLER};
 			./${WAINSTALLER};
-		;;
-
-		i*|I*)
-			clear;
-			cd /tmp || exit 1;
-			# Check if package is already presant otherwise download it
-			if [ ! -e "${WINSTALLER}" ]; then
-				echo;
-				curl -O ${WINSTALLERADDRESS};
-			fi
-			chmod +x ${WINSTALLER};
-			./${WINSTALLER};
 		;;
 
 		e*|E*)
