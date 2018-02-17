@@ -110,6 +110,7 @@ do
 		*)
 			echo;
 			echo "${R}${b}This option does not exist... ${N}";
+			sleep 3;
 			echo;
 		;;
 	esac
