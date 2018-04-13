@@ -101,7 +101,7 @@ depuninstall_funct(){
 }
 
 # Check for new OpenSSL otherwise quit installation
-if [ "$(openssl version | awk '{ print $2 }')" != "1.1.0*" ]; then
+if [ "$(openssl version | awk '{ print $2 }')" != "1.1.0h" ]; then
     echo -e "${R}${b}Sorry you use the old OpenSSL version which won´t work with this installation.";
     echo;
     echo -e "Please install the old version manually from here";
