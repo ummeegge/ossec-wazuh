@@ -242,6 +242,7 @@ do
                 echo;
             fi
             # Uninstall make if wanted
+            cd; cd -
             depuninstall_funct;
         ;;
    
@@ -354,6 +355,7 @@ do
                 echo;
             fi
             # Uninstall make if wanted
+            cd; cd -
             depuninstall_funct;
         ;;
 
