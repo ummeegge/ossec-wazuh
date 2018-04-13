@@ -91,6 +91,33 @@ install_funct() {
     echo;
 }
 
+tempdepinstall_funct(){
+    if [[ ! -e "/usr/bin/make" ]]; then
+        echo -e "${R}${b}make is missing on this system but is temporarily need to install OSSEC and will be uninstalled after OSSEC installation... ${N}";
+        read -p "To temporarily install make press [ENTER] - Otherwise hit [CTRL]-c to quit";
+        pakfire install make;
+    fi
+}
+
+depuninstall_funct(){
+    clear;
+    echo -e "Installation is now finish and make can be uninstalled if wanted... ";
+    echo -e "To uninstall make press ${B}${b}'u'${N} and [ENTER]";
+    echo -e "To leave it installed press ${B}${b}'l'${N} and [ENTER]";
+    echo;
+    read choice
+    case ${choice} in
+        u*|U*)
+            echo "Will uninstall make now... ";
+            pakfire remove make;
+        ;;
+        l*|L*)
+            echo "Will leave make on the system... ";
+            sleep 3;
+        ;;
+    esac
+}
+
 # Installer Menu
 while true
 do
@@ -117,6 +144,8 @@ do
     # Install Server
     case $choice in
         s*|S*)
+            # Check for temporary dependency
+            tempdepinstall_funct;
             # Check for 64 bit installation
             if [[ ${TYPE} = "64" ]]; then
                 clear;
@@ -200,6 +229,8 @@ do
                 echo "Sorry this platform is currently not supported, need to quit... ";
                 echo;
             fi
+            # Uninstall make if wanted
+            depuninstall_funct;
         ;;
    
         a*|A*)
@@ -289,6 +320,8 @@ do
                 echo "Sorry this platform is currently not supported, need to quit... ";
                 echo;
             fi
+            # Uninstall make if wanted
+            depuninstall_funct;
         ;;
 
         # Configure section
