@@ -13,12 +13,12 @@
 #
 
 # Packages
-VER="2.8.3";
+VER="2.9.3";
 OSSEC="/var/ossec";
-AGENTA="ossec-binary-${VER}_agent_32bit.tgz";
-SERVERA="ossec-binary-${VER}_server_32bit.tgz";
-AGENTB="ossec-binary-${VER}_agent_64bit.tgz";
-SERVERB="ossec-binary-${VER}_server_64bit.tgz";
+SERVERA="ossec-hybrid-${VER}-32bit-binary.tgz";
+AGENTA="ossec-agent-${VER}-32bit-binary.tgz";
+SERVERB="ossec-hybrid-${VER}-64bit-binary.tgz";
+AGENTB="ossec-agent-${VER}-64bit-binary.tgz";
 INSTDIR="/tmp/ossec-hids-${VER}*";
 BIN="ossec";
 ALERTSCRIPT="/etc/fcron.minutely/ossec_mailalert.sh";
@@ -26,17 +26,16 @@ CUSTOMALERTLOG="${OSSEC}/logs/alerts/custom_dated_alert.log";
 RC="/etc/sysconfig/rc.local";
 
 # Download URL
-URL="https://people.ipfire.org/~ummeegge/Ossec_for_IPFire/";
+URL="https://people.ipfire.org/~ummeegge/ossec-wazuh//${VER}/";
 
 # SHA256 sums
-SERVERSUMA="67030a6901d3089c8b674d80360be9d023f9be01711c6b0e0142bad81290fe37";
-AGENTSUMA="102c5313db060f5ffdb649913e8c2fe020dd946a9edca94457ff5d9052836a87";
-SERVERSUMB="92df72f9076b64033a9ab6055ace9167680c106c534b704eb566b13cc3a38f79";
-AGENTSUMB="7a2296902f034e26df223983f4fe8763be538340896c4bf283c94e1272859a12";
+SERVERSUMA="1ad0ac1490633b409954446d302e561d3b6e66763b69ab5bf0b83cc007b86b80";
+AGENTSUMA="b81c9a7439ee4cba2cf6b1d1a0a85858c6fc247b198d013c6013e0e06d3ee755";
+SERVERSUMB="397229412ab50631da006f3d9dc8c1bb3ad9feaefc82d6f34a1adf66b18d0d67";
+AGENTSUMB="71c79c7b311f10cb902d570badf255924038375afe839e3f04d38fefd6c88b82";
 
 # Platform check
 TYPE=$(uname -m | tail -c 3);
-
 
 # Formatting and Colors
 COLUMNS="$(tput cols)";
@@ -74,6 +73,43 @@ symlinkdel_funct(){
     fi
 }
 
+tempdepinstall_funct(){
+    if [[ ! -e "/usr/bin/make" ]]; then
+        echo -e "${R}${b}make is missing on this system but is temporarily need to install OSSEC and will be uninstalled after OSSEC installation... ${N}";
+        read -p "To temporarily install make press [ENTER] - Otherwise hit [CTRL]-c to quit";
+        pakfire install make;
+    fi
+}
+
+depuninstall_funct(){
+    clear;
+    echo -e "Installation is now finish and make can be uninstalled if wanted... ";
+    echo -e "To uninstall make press ${B}${b}'u'${N} and [ENTER]";
+    echo -e "To leave it installed press ${B}${b}'l'${N} and [ENTER]";
+    echo;
+    read choice
+    case ${choice} in
+        u*|U*)
+            echo "Will uninstall make now... ";
+            pakfire remove make;
+        ;;
+        l*|L*)
+            echo "Will leave make on the system... ";
+            sleep 3;
+        ;;
+    esac
+}
+
+# Check for new OpenSSL otherwise quit installation
+if [ "$(openssl version | awk '{ print $2 }')" != "1.1.0g" ]; then
+    echo -e "${R}${b}Sorry you use the old OpenSSL version which won´t work with this installation.";
+    echo;
+    echo -e "Please install the old version manually from here";
+    echo -e " --> https://people.ipfire.org/~ummeegge/Ossec_for_IPFire/ ";
+    echo -e "or update your system to >= Core 120${N}";
+    exit 1;
+fi
+
 # Installer Menu
 while true
 do
@@ -100,6 +136,8 @@ do
     # Install Server
     case $choice in
         s*|S*)
+            # Check for needed install dependency
+            tempdepinstall_funct;
             # Check for 64 bit installation
             if [[ ${TYPE} = "64" ]]; then
                 clear;
@@ -139,8 +177,7 @@ do
                 symlinkadd_funct;
                 touch /opt/pakfire/db/installed/meta-ossec;
                 # CleanUP
-                rm -rf \
-                /tmp/ossec-hids-${VER} \
+                rm -rf /tmp/ossec-hids-${VER};
                 echo;
                 clear;
                 echo "Please don´t forget to integrate your agent(s) into your server environment if you do not use the local version... ";
@@ -189,8 +226,7 @@ do
                 symlinkadd_funct;
                 touch /opt/pakfire/db/installed/meta-ossec;
                 # CleanUP
-                rm -rf \
-                /tmp/ossec-hids-${VER} \
+                rm -rf /tmp/ossec-hids-${VER};
                 echo;
                 clear;
                 echo "Please don´t forget to integrate your agent(s) into your server environment if you do not use the local version... ";
@@ -205,6 +241,8 @@ do
                 echo "Sorry this platform is currently not supported, need to quit... ";
                 echo;
             fi
+            # Uninstall make if wanted
+            depuninstall_funct;
         ;;
    
         a*|A*)
@@ -249,8 +287,7 @@ do
                 symlinkadd_funct;
                 touch /opt/pakfire/db/installed/meta-ossec;
                 # CleanUP
-                rm -rf \
-                /tmp/ossec-hids-${VER} \
+                rm -rf /tmp/ossec-hids-${VER};
                 echo;
                 clear;
                 echo -e "${b}${R}Please don´t forget to configure your agent to your needs... ${N}";
@@ -261,6 +298,7 @@ do
                 echo;
                 read -p "The script provides also minimum configuration in the menu. Press [ENTER] to proceed further... ";
             elif [[ ${TYPE} = "86" ]]; then
+                tempdep_funct;
                 clear;
                 read -p "To install the OSSEC agent now press [ENTER] , to quit use [CTRL-c]... ";
                 cd /tmp  || exit 1;
@@ -300,8 +338,7 @@ do
                 symlinkadd_funct;
                 touch /opt/pakfire/db/installed/meta-ossec;
                 # CleanUP
-                rm -rf \
-                /tmp/ossec-hids-${VER} \
+                rm -rf /tmp/ossec-hids-${VER};
                 echo;
                 clear;
                 echo "Please don´t forget to configure your agent to your needs... ";
@@ -316,6 +353,8 @@ do
                 echo "Sorry this platform is currently not supported, need to quit... ";
                 echo;
             fi
+            # Uninstall make if wanted
+            depuninstall_funct;
         ;;
 
         c*|C*)

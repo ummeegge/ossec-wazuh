@@ -13,7 +13,7 @@
 #
 
 # Packages
-VER="3.2.0";
+VER="3.2.1";
 wazuh="/var/ossec";
 AGENTA="wazuh-agent-${VER}-32bit-binary.tgz";
 SERVERA="wazuh-hybrid-${VER}-32bit-binary.tgz";
@@ -26,13 +26,13 @@ CUSTOMALERTLOG="${wazuh}/logs/alerts/custom_dated_alert.log";
 RC="/etc/sysconfig/rc.local";
 
 # Download URL
-URL="https://people.ipfire.org/~ummeegge/wazuh";
+URL="https://people.ipfire.org/~ummeegge/ossec-wazuh/${VER}";
 
 # SHA256 sums
-SERVERSUMA="3d3e2d7733f6db1d187adaef3be0f78af7ba12a76c1456af1a9dcc6f856b98b9";
-AGENTSUMA="994ff15315d8ace4e46f04b8445800647f970680cd9b74703a69df57d28dedea";
-SERVERSUMB="289c0dbaac1e9c9713572c856c035a2eaafc1014376b4f1b7148fbd21781afc8";
-AGENTSUMB="69887fafb8a9fa59ac07615b4bf3cb138754274ef9a929739e235b107db8e661";
+AGENTSUMA="706c2f54ef0ff792c544d005618391b085bf9242d1cb76ac32fce887df71c2be";
+SERVERSUMA="d740ded14a3dcce5dcf14ec61786b6cccfbe00386ff66a0da11404ec773ce1aa";
+AGENTSUMB="7b70fe4376db0fdf5d834531cc86c3d6ea3d72567ef202fa0b6acb31e5c9d3d4";
+SERVERSUMB="ccfc765941eeaf51a81e4cfd41ece530248358c88d0bc5ef20077925e577483d";
 
 # Platform check
 TYPE=$(uname -m | tail -c 3);
